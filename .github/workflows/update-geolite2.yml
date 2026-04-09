@@ -1,0 +1,30 @@
+name: Update GeoLite2 City MMDB
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1" # 每周一 UTC 03:00
+
+jobs:
+  update-mmdb:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download GeoLite2 City
+        run: |
+          set -e
+          mkdir -p data
+          curl -fL "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${{ secrets.MAXMIND_LICENSE_KEY }}&suffix=tar.gz" -o geolite2-city.tar.gz
+          tar -xzf geolite2-city.tar.gz
+          MMDB_PATH=$(find . -type f -name "GeoLite2-City.mmdb" | head -n 1)
+          cp "$MMDB_PATH" data/GeoLite2-City.mmdb
+          ls -lh data/GeoLite2-City.mmdb
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GeoLite2-City-mmdb
+          path: data/GeoLite2-City.mmdb
