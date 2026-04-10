@@ -10,14 +10,27 @@ jobs:
     steps:
       - name: Download GeoLite2
         run: |
-          curl -L -o GeoLite2-City.tar.gz \
+          echo "Start downloading MaxMind DB..."
+
+          curl -f -L -o GeoLite2-City.tar.gz \
           "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${{ secrets.MAXMIND_LICENSE_KEY }}&suffix=tar.gz"
 
-      - name: Extract
-        run: tar -xzf GeoLite2-City.tar.gz
+      - name: Check file type
+        run: |
+          file GeoLite2-City.tar.gz
+          ls -lh GeoLite2-City.tar.gz
 
-      - name: Upload Artifact
+      - name: Extract
+        run: |
+          tar -xzf GeoLite2-City.tar.gz
+
+      - name: Find mmdb file
+        run: |
+          find . -name "*.mmdb"
+
+      - name: Upload Artifact (only mmdb)
         uses: actions/upload-artifact@v4
         with:
           name: geo-db
-          path: .
+          path: |
+            **/*.mmdb
